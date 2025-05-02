@@ -66,19 +66,16 @@ kube::version::get_version_vars() {
     fi
 
     # Use git describe to find the version based on tags.
-      if [[ -n ${KUBE_GIT_VERSION-} ]]; then
-          true 
-      else
-        KUBE_GIT_VERSION=$("${git[@]}" describe --tags --match='v*' --abbrev=14 "${KUBE_GIT_COMMIT}^{commit}" 2>/dev/null) || true
-    # Fallback to /build/version if git describe fails
-          version_file="${KUBE_ROOT}/build/build-image/cross/VERSION"
-            if [[ -z "${KUBE_GIT_VERSION}" && -f "${version_file}" ]]; then
-              file_version=$(cut -d '-' -f1 < "${version_file}")
-    # ensure it starts with 'v'
-              [[ "${file_version}" =~ ^v ]] || file_version="v${file_version}"
-            else
-              file_version="v0.0.0"
-            fi
+    if [[ -n ${KUBE_GIT_VERSION-} ]]; then
+      true
+    else
+      KUBE_GIT_VERSION=$("${git[@]}" describe --tags --match='v*' --abbrev=14 "${KUBE_GIT_COMMIT}^{commit}" 2>/dev/null) || true
+      # Fallback to /build/build-image/cross/VERSION if git describe fails
+      version_file="${KUBE_ROOT}/build/build-image/cross/VERSION"
+      if [[ -z "${KUBE_GIT_VERSION}" && -f "${version_file}" ]]; then
+        file_version=$(cut -d '-' -f1 <"${version_file}")
+        # ensure it starts with 'v'
+        [[ "${file_version}" =~ ^v ]] || file_version="v${file_version}"
         KUBE_GIT_VERSION="${file_version}+${KUBE_GIT_COMMIT:0:14}"
         KUBE_GIT_TREE_STATE="archive"
       fi
@@ -128,6 +125,7 @@ kube::version::get_version_vars() {
           exit 1
       fi
     fi
+  fi
 }
 
 # Saves the environment flags to $1
